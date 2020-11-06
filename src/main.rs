@@ -1,6 +1,8 @@
 use futures::future::{self, Future};
 use log::debug;
 use simplelog::{ConfigBuilder, LevelFilter, SimpleLogger};
+use std::convert::Infallible;
+use std::error::Error;
 use std::pin::Pin;
 
 fn main() {
@@ -24,15 +26,15 @@ fn main() {
     // // tokio::spawn(future::lazy(|_| println!("in tokio::spawn")));
     // rt.spawn(future::lazy(|_| debug!("in rt.spawn()")));
 
-    // rt.block_on(future::lazy(|_| debug!("in rt.block_on()")));
-    let result = rt.block_on(future::ready("hello from rt.block_on()"));
-    debug!("{}", result);
+    // // rt.block_on(future::lazy(|_| debug!("in rt.block_on()")));
+    // let result = rt.block_on(future::ready("hello from rt.block_on()"));
+    // debug!("{}", result);
 
-    let result = rt.block_on(returns_future_i32());
-    debug!("{}", result);
+    // let result = rt.block_on(returns_future_i32());
+    // debug!("{}", result);
 
-    let result = rt.block_on(returns_dyn_future_i32());
-    debug!("{}", result);
+    // let result = rt.block_on(returns_dyn_future_i32());
+    // debug!("{}", result);
 }
 
 fn returns_future_i32() -> impl Future<Output = i32> {
@@ -52,4 +54,12 @@ fn returns_dyn_future_i32() -> Pin<Box<dyn Future<Output = i32>>> {
     } else {
         Box::pin(future::lazy(|_| 1337))
     }
+}
+
+// fn returns_future_result() -> impl Future<Output = Result<i32, Box<dyn Error>>> {
+//     future::ok(42)
+// }
+
+fn returns_future_result() -> impl Future<Output = Result<i32, impl Error>> {
+    future::ok::<i32, Infallible>(42)
 }
