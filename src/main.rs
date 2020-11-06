@@ -1,9 +1,6 @@
 use futures::future::{self, Future};
 use log::debug;
 use simplelog::{ConfigBuilder, LevelFilter, SimpleLogger};
-use std::convert::Infallible;
-use std::error::Error;
-use std::pin::Pin;
 
 fn main() {
     let config = ConfigBuilder::new()
@@ -19,47 +16,29 @@ fn main() {
     //     .build()
     //     .unwrap();
 
-    // rt.enter(|| {
-    //     debug!("in rt.enter()");
-    //     tokio::spawn(future::lazy(|_| debug!("in tokio::spawn()")));
-    // });
-    // // tokio::spawn(future::lazy(|_| println!("in tokio::spawn")));
-    // rt.spawn(future::lazy(|_| debug!("in rt.spawn()")));
+    rt.block_on(async_hello());
 
-    // // rt.block_on(future::lazy(|_| debug!("in rt.block_on()")));
-    // let result = rt.block_on(future::ready("hello from rt.block_on()"));
-    // debug!("{}", result);
+    let x = 42;
+    let async_capture = async {
+        debug!("in async_capture, x => {}", x);
+    };
+    rt.block_on(async_capture);
 
-    // let result = rt.block_on(returns_future_i32());
-    // debug!("{}", result);
-
-    // let result = rt.block_on(returns_dyn_future_i32());
-    // debug!("{}", result);
+    rt.block_on(async_returns_i32());
+    rt.block_on(returns_future_i32());
+    rt.block_on(returns_async_block_i32());
 }
 
+async fn async_returns_i32() -> i32 {
+    42
+}
 fn returns_future_i32() -> impl Future<Output = i32> {
     future::ready(42)
 }
-
-// fn returns_impl_future_i32() -> impl Future<Output = i32> {
-//     if rand::random() {
-//         return future::ready(42);
-//     }
-//     future::lazy(|_| 1337)
-// }
-
-fn returns_dyn_future_i32() -> Pin<Box<dyn Future<Output = i32>>> {
-    if rand::random() {
-        Box::pin(future::ready(42))
-    } else {
-        Box::pin(future::lazy(|_| 1337))
-    }
+fn returns_async_block_i32() -> impl Future<Output = i32> {
+    async { 42 }
 }
 
-// fn returns_future_result() -> impl Future<Output = Result<i32, Box<dyn Error>>> {
-//     future::ok(42)
-// }
-
-fn returns_future_result() -> impl Future<Output = Result<i32, impl Error>> {
-    future::ok::<i32, Infallible>(42)
+async fn async_hello() {
+    debug!("Hello, asynchronously!");
 }
